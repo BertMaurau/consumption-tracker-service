@@ -156,7 +156,7 @@ class User extends Models\BaseModel
      */
     public function getFirstName(): ?string
     {
-        return $this -> firstName;
+        return $this -> first_name;
     }
 
     /**
@@ -185,7 +185,7 @@ class User extends Models\BaseModel
      */
     public function getLastName(): ?string
     {
-        return $this -> lastName;
+        return $this -> last_name;
     }
 
     /**
@@ -253,7 +253,7 @@ class User extends Models\BaseModel
      *
      * @return $this
      */
-    public function setPassword(string $password)
+    public function setPassword(string $password = null)
     {
         $this -> password = $password;
         return $this;
@@ -327,10 +327,10 @@ class User extends Models\BaseModel
                 -> insert();
 
         // salt and hash the password
-        $this -> updatePassword($password);
+        $user -> updatePassword($password);
 
         // generate an avatar
-        $this -> generateAvatar();
+        $user -> generateAvatar();
 
         return $user;
     }

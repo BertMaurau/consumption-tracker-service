@@ -27,6 +27,8 @@
 namespace ConsumptionTracker\Models\User;
 
 use ConsumptionTracker\Models AS Models;
+use ConsumptionTracker\Core AS Core;
+use ConsumptionTracker\Modules AS Modules;
 
 /**
  * Description of UserToken
@@ -262,16 +264,16 @@ class UserToken extends Models\BaseModel
 
     /**
      * Is Active
-     * @var boolean
+     * @var bool
      */
     public $is_active;
 
     /**
      * Get Is Active
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsActive(): boolean
+    public function getIsActive(): bool
     {
         return $this -> is_active;
     }
@@ -279,11 +281,11 @@ class UserToken extends Models\BaseModel
     /**
      * Set Is Active
      *
-     * @param boolean $isActive
+     * @param bool $isActive
      *
      * @return $this
      */
-    public function setIsActive(boolean $isActive)
+    public function setIsActive(bool $isActive)
     {
         $this -> is_active = $isActive;
         return $this;
@@ -291,16 +293,16 @@ class UserToken extends Models\BaseModel
 
     /**
      * Is Disabled
-     * @var boolean
+     * @var bool
      */
     public $is_disabled;
 
     /**
      * Get Is Disabled
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsDisabled(): boolean
+    public function getIsDisabled(): bool
     {
         return $this -> is_disabled;
     }
@@ -308,11 +310,11 @@ class UserToken extends Models\BaseModel
     /**
      * Set Is Disabled
      *
-     * @param boolean $isDisabled
+     * @param bool $isDisabled
      *
      * @return $this
      */
-    public function setIsDisabled(boolean $isDisabled)
+    public function setIsDisabled(bool $isDisabled)
     {
         $this -> is_disabled = $isDisabled;
         return $this;
@@ -343,14 +345,17 @@ class UserToken extends Models\BaseModel
      *
      * @throws \Exception
      */
-    public function setExpiresAt(\DateTime $expiresAt)
+    public function setExpiresAt($expiresAt)
     {
-        try {
-            $dt = new \DateTime($expiresAt);
-        } catch (\Exception $ex) {
-            throw new \Exception("Could not parse given timestamp (UserToken::expiresAt).");
+        $this -> expires_at = $expiresAt;
+        if ($expiresAt && is_string($expiresAt)) {
+            try {
+                $dt = new \DateTime($expiresAt);
+            } catch (\Exception $ex) {
+                throw new \Exception("Could not parse given timestamp (UserToken::expiresAt).");
+            }
+            $this -> expires_at = $dt;
         }
-        $this -> expires_at = $dt;
         return $this;
     }
 

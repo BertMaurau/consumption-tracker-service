@@ -20,6 +20,8 @@ $route -> map('POST', '/login', [new Controllers\UserController, 'login']);
 
 $route -> group('', function ($route) {
 
+    $route -> map('POST', '/logout', [new Controllers\UserController, 'logout']);
+
     // User related endpoints
     $route -> map('GET', '/me', [new Controllers\UserController, 'show']);
     $route -> map('PATCH', '/me', [new Controllers\UserController, 'update']);

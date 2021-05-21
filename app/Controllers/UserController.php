@@ -99,6 +99,56 @@ class UserController extends BaseController
     }
 
     /**
+     * Disable the current auth token
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param array $args
+     *
+     * @return ResponseInterface $response
+     */
+    public function logout(ServerRequestInterface $request, ResponseInterface $response, array $args)
+    {
+
+        $userId = Core\Auth::getUserId();
+        if (!$userId) {
+            return Core\Output::NotAuthorized($response);
+        }
+
+        // define required arguments/values
+        $validationFields = [
+            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'email', 'type' => Core\ValidatedRequest::TYPE_EMAIL, 'required' => true,],
+            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'password', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => true,],
+            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'device', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'browser', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+        ];
+
+        $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
+        if (!$validatedRequest -> isValid()) {
+            return $validatedRequest -> getOutput();
+        }
+
+        $filteredInput = $validatedRequest -> getFilteredInput();
+
+        // get user resource
+        $user = (new Models\User) -> getById($userId);
+        if (!$user) {
+            return Core\Output::ModelNotFound($response, 'User', $userId);
+        }
+
+        // get the model and destory it
+        $userAuthToken = (new Models\User\UserToken) -> findBy(['user_id' => $userId, 'uid' => Core\Auth::getTokenUid()], $take = 1);
+        if (!$userAuthToken) {
+            // should..not..happen?
+            return Core\Output::ModelNotFound($response, 'UserAuthToken', Core\Auth::getTokenUid());
+        }
+
+        $userAuthToken -> setIsActive(false) -> setIsDestroyed(true) -> update();
+
+        return Core\Output::OK($response, $userAuthToken);
+    }
+
+    /**
      * Show the currently authenticated user
      *
      * @param ServerRequestInterface $request

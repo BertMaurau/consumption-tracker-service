@@ -108,7 +108,7 @@ class Image
      *
      * @return string
      */
-    private static function saveImage($imageData, string $imageDirectory, string $guid, int $maxSize = null)
+    public static function saveImage($imageData, string $imageDirectory, string $guid, int $maxSize = null)
     {
 
         $_filepath = rtrim(Config::getInstance() -> Paths() -> images, '/') . '/' . $imageDirectory . '/';
