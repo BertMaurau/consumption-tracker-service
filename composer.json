@@ -1,0 +1,24 @@
+{
+    "name": "bertmaurau-consumption-tracker-api",
+    "description": "The back-end API for the Consumption Tracker platform.",
+    "type": "project",
+    "require": {
+        "vlucas/phpdotenv": "^4.0@dev",
+        "zendframework/zend-diactoros": "dev-release-1.8",
+        "lasserafn/php-initial-avatar-generator": "dev-master",
+        "league/route": "3.x-dev"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bert Maurau",
+            "email": "hello@bertmaurau.be"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "ConsumptionTracker\\": "app/"
+        }
+    },
+    "minimum-stability": "dev"
+}

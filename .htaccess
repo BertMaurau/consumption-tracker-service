@@ -1,0 +1,22 @@
+Redirect 301 /xmlrpc.php http://127.0.0.1
+Redirect 301 /wp-login.php http://127.0.0.1
+Redirect 301 /wordpress/wp-login.php http://127.0.0.1
+Redirect 301 /web/wp-login.php http://127.0.0.1
+Redirect 301 /cgi-bin/ViewLog.asp http://127.0.0.1
+Redirect 301 /.env http://127.0.0.1
+Redirect 301 /env/.env http://127.0.0.1
+Redirect 301 /test.php http://127.0.0.1
+Redirect 301 /1.php http://127.0.0.1
+Redirect 301 /shell.php http://127.0.0.1
+Redirect 301 /qq.php http://127.0.0.1
+Redirect 301 /cmd.php http://127.0.0.1
+Redirect 301 /vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php http://127.0.0.1
+
+RewriteEngine On
+
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond $1 !\.(html)
+RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
