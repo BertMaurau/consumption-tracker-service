@@ -6,7 +6,8 @@
         "vlucas/phpdotenv": "^4.0@dev",
         "zendframework/zend-diactoros": "dev-release-1.8",
         "lasserafn/php-initial-avatar-generator": "dev-master",
-        "league/route": "3.x-dev"
+        "league/route": "3.x-dev",
+        "phpmailer/phpmailer": "dev-master"
     },
     "license": "MIT",
     "authors": [

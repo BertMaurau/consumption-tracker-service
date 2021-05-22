@@ -31,11 +31,11 @@ use ConsumptionTracker\Core AS Core;
 use ConsumptionTracker\Modules AS Modules;
 
 /**
- * Description of UserToken
+ * Description of UserPasswordReset
  *
  * @author bertmaurau
  */
-class UserToken extends Models\BaseModel
+class UserPasswordReset extends Models\BaseModel
 {
 
     /**
@@ -47,7 +47,7 @@ class UserToken extends Models\BaseModel
         /**
          * Database table name
          */
-        'table'             => 'user_tokens',
+        'table'             => 'user_password_resets',
         /**
          * Field that represents the primary key
          */
@@ -74,7 +74,7 @@ class UserToken extends Models\BaseModel
          * List of properties that are allowed to be ordered on
          */
         'orderable'         => [
-            'id', 'token', 'expires_at', 'created_at', 'updated_at'
+            'id', 'claimed_at', 'expires_at', 'created_at', 'updated_at'
         ],
         /**
          * If the model contains an image, return the paths to the base image
@@ -98,8 +98,8 @@ class UserToken extends Models\BaseModel
          */
         'resourceUris'      => [
             'self'   => [
-                'users'  => 'user_id',
-                'tokens' => 'id',
+                'users'           => 'user_id',
+                'password-resets' => 'id',
             ],
             'parent' => [
                 'users' => 'user_id',
@@ -176,151 +176,6 @@ class UserToken extends Models\BaseModel
     }
 
     /**
-     * Device
-     * @var string
-     */
-    public $device;
-
-    /**
-     * Get Device
-     *
-     * @return string|null
-     */
-    public function getDevice(): ?string
-    {
-        return $this -> device;
-    }
-
-    /**
-     * Set Device
-     *
-     * @param string $device
-     *
-     * @return $this
-     */
-    public function setDevice(string $device = null)
-    {
-        $this -> device = $device;
-        return $this;
-    }
-
-    /**
-     * Browser
-     * @var string
-     */
-    public $browser;
-
-    /**
-     * Get Browser
-     *
-     * @return string|null
-     */
-    public function getBrowser(): ?string
-    {
-        return $this -> browser;
-    }
-
-    /**
-     * Set Browser
-     *
-     * @param string $browser
-     *
-     * @return $this
-     */
-    public function setBrowser(string $browser = null)
-    {
-        $this -> browser = $browser;
-        return $this;
-    }
-
-    /**
-     * Location
-     * @var string
-     */
-    public $location;
-
-    /**
-     * Get Location
-     *
-     * @return string|null
-     */
-    public function getLocation(): ?string
-    {
-        return $this -> location;
-    }
-
-    /**
-     * Set Location
-     *
-     * @param string $location
-     *
-     * @return $this
-     */
-    public function setLocation(string $location = null)
-    {
-        $this -> location = $location;
-        return $this;
-    }
-
-    /**
-     * Is Active
-     * @var bool
-     */
-    public $is_active;
-
-    /**
-     * Get Is Active
-     *
-     * @return bool
-     */
-    public function getIsActive(): bool
-    {
-        return $this -> is_active;
-    }
-
-    /**
-     * Set Is Active
-     *
-     * @param bool $isActive
-     *
-     * @return $this
-     */
-    public function setIsActive(bool $isActive)
-    {
-        $this -> is_active = $isActive;
-        return $this;
-    }
-
-    /**
-     * Is Disabled
-     * @var bool
-     */
-    public $is_disabled;
-
-    /**
-     * Get Is Disabled
-     *
-     * @return bool
-     */
-    public function getIsDisabled(): bool
-    {
-        return $this -> is_disabled;
-    }
-
-    /**
-     * Set Is Disabled
-     *
-     * @param bool $isDisabled
-     *
-     * @return $this
-     */
-    public function setIsDisabled(bool $isDisabled)
-    {
-        $this -> is_disabled = $isDisabled;
-        return $this;
-    }
-
-    /**
      * Expires At
      * @var \DateTime
      */
@@ -360,23 +215,62 @@ class UserToken extends Models\BaseModel
     }
 
     /**
+     * Claimed At
+     * @var \DateTime
+     */
+    public $claimed_at;
+
+    /**
+     * Get Claimed At
+     *
+     * @return \DateTime
+     */
+    public function getClaimedAt(): ?\DateTime
+    {
+        return $this -> claimed_at;
+    }
+
+    /**
+     * Set Claimed At
+     *
+     * @param \DateTime $claimedAt
+     *
+     * @return $this
+     *
+     * @throws \Exception
+     */
+    public function setClaimedAt($claimedAt)
+    {
+        $this -> claimed_at = $claimedAt;
+        if ($claimedAt && is_string($claimedAt)) {
+            try {
+                $dt = new \DateTime($claimedAt);
+            } catch (\Exception $ex) {
+                throw new \Exception("Could not parse given timestamp (UserToken::claimedAt).");
+            }
+            $this -> claimed_at = $dt;
+        }
+        return $this;
+    }
+
+    /**
      * |======================================================================
      * | Model Functions
      * |======================================================================
      */
 
     /**
-     * Check if token is valid (based on all conditions)
+     * Check if reset is valid (based on all conditions)
      *
-     * @return bool Valid
+     * @return bool
      */
     public function isValid(): bool
     {
-        return ($this -> isActive() && !$this -> isDisabled() && !$this -> isExpired());
+        return (!$this -> isClaimed() && !$this -> isExpired());
     }
 
     /**
-     * Check if token is expired
+     * Check if reset is expired
      *
      * @return bool Expired
      */
@@ -386,77 +280,47 @@ class UserToken extends Models\BaseModel
     }
 
     /**
-     * Check if token is disabled
+     * Check if reset is claimed
      *
-     * @return bool Disabled
+     * @return bool
      */
-    public function isDisabled(): bool
+    public function isClaimed(): bool
     {
-        return !$this -> getIsActive();
-    }
-
-    /**
-     * Check if token is active
-     *
-     * @return bool Active
-     */
-    public function isActive(): bool
-    {
-        return $this -> getIsActive();
+        return !!$this -> getClaimedAt();
     }
 
     /**
      * Generate a new token for given User ID
      *
      * @param int $userId
-     * @param int $daysValid
      * @param array $properties
      *
-     * @return UserToken
+     * @return UserPasswordReset
      */
-    public static function create(int $userId, int $daysValid = 30, array $properties = []): UserToken
+    public static function create(int $userId, array $properties = []): UserPasswordReset
     {
 
         // generate the datetime until expires
-        $expiresAt = date("Y-m-d H:i:s", strtotime("+$daysValid day"));
-
-        // fetch the location
-        $location = Core\Auth::getLocation();
+        $expiresAt = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
         // create the record
-        $userToken = (new self)
+        $userPasswordReset = (new self)
                 -> setUserId($userId)
                 -> setToken(Core\Generator::Uid())
-                -> setIsActive(true)
                 -> setExpiresAt($expiresAt)
-                -> setLocation($location)
-                -> setDevice($properties['device'] ?? null)
-                -> setBrowser($properties['device'] ?? null)
                 -> insert();
 
-        // generate a new JWT Token
-        return $userToken;
+        return $userPasswordReset;
     }
 
     /**
-     * Generate Auth Token from UserToken values
+     * Get the public URL to reset the password
      *
      * @return string
-     *
-     * @throws \Exception
      */
-    public function getAuthToken(): string
+    public function getResetLink()
     {
-        if (!$this -> getId()) {
-            throw new \Exception('UserToken not initialized.');
-        }
-
-        return Modules\JWT::encode(
-                        [
-                            'env'    => Core\Config::getInstance() -> API() -> env,
-                            'userId' => $this -> getUserId(),
-                            'token'  => $this -> getToken(),
-                        ], Core\Config::getInstance() -> Salts() -> token);
+        return Core\Config::getInstance() -> API() -> webApp . '/reset-password?token=' . $this -> getToken();
     }
 
 }

@@ -81,7 +81,7 @@ class User extends Models\BaseModel
          * If the model contains an image, return the paths to the base image
          * directory
          */
-        'hasImageReference' => false,
+        'hasImageReference' => true,
         /**
          * Directory for the images
          */
@@ -305,6 +305,16 @@ class User extends Models\BaseModel
      */
 
     /**
+     * Get the display name
+     *
+     * @return string
+     */
+    public function getDisplayName()
+    {
+        return trim(($this -> getFirstName() ?: '') . ' ' . ($this -> getLastName() ?: ''));
+    }
+
+    /**
      * Create a new User
      *
      * @param string $email
@@ -395,9 +405,7 @@ class User extends Models\BaseModel
         }
 
         $passwordSalted = $this -> getGuid() . $password . Core\Config::getInstance() -> Salts() -> password;
-
-        $passwordHash = password_hash($passwordSalted, PASSWORD_DEFAULT, ['cost' => 11]);
-        if (!password_verify($passwordHash, $this -> getPassword())) {
+        if (!password_verify($passwordSalted, $this -> getPassword())) {
             return false;
         }
 

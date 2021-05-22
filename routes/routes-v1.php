@@ -17,6 +17,9 @@ $route -> map('GET', '/', function(ServerRequestInterface $request, ResponseInte
 // User related endpoints without middleware
 $route -> map('POST', '/register', [new Controllers\UserController, 'create']);
 $route -> map('POST', '/login', [new Controllers\UserController, 'login']);
+$route -> map('POST', '/password-resets/request', [new Controllers\UserPasswordResetController, 'request']);
+//$route -> map('POST', '/reset-password/validate', [new Controllers\UserPasswordResetController, 'validate']); // DEPRECATED
+$route -> map('POST', '/password-resets/reset', [new Controllers\UserPasswordResetController, 'reset']);
 
 $route -> group('', function ($route) {
 

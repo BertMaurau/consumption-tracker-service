@@ -63,10 +63,10 @@ $user = function ($request, $response, callable $next) {
 
             try {
                 if ($logRequestIncoming = Core\Auth::getLogRequestIncoming()) {
-                    (new Models\UserLogRequestsIncoming)
+                    (new Models\User\UserLogRequestsIncoming)
                             -> setUserId($foundAuthToken -> getUserId())
                             -> setUserTokenId($foundAuthToken -> getId())
-                            -> setLogRequestsIncomingId($logRequest -> getId())
+                            -> setLogRequestsIncomingId($logRequestIncoming -> getId())
                             -> insert();
                 }
             } catch (\Exception $ex) {
