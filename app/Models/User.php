@@ -374,19 +374,20 @@ class User extends Models\BaseModel
     /**
      * Set Verified At
      *
-     * @param \DateTime $verifiedAt
+     * @param string $verifiedAt
      *
      * @return $this
      *
      * @throws \Exception
      */
-    public function setVerifiedAt(\DateTime $verifiedAt = null)
+    public function setVerifiedAt($verifiedAt = null)
     {
-        if ($verifiedAt) {
+        $this -> verified_at = $verifiedAt;
+        if ($verifiedAt && is_string($verifiedAt)) {
             try {
                 $dt = new \DateTime($verifiedAt);
             } catch (\Exception $ex) {
-                throw new \Exception("Could not parse given timestamp (BaseModel::verifiedAt).");
+                throw new \Exception("Could not parse given timestamp (User::verifiedAt).");
             }
             $this -> verified_at = $dt;
         }

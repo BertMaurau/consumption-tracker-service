@@ -32,11 +32,17 @@ $route -> group('', function ($route) {
     $route -> map('DELETE', '/users/{id}', [new Controllers\UserController, 'delete']);
     $route -> map('POST', '/users/{id}/avatar', [new Controllers\UserController, 'avatar']);
 
-    $route -> map('GET', '/my/consumptions', [new Controllers\UserCOnsumptionController, 'index']);
-    $route -> map('GET', '/my/consumptions/{id}', [new Controllers\UserCOnsumptionController, 'show']);
-    $route -> map('POST', '/my/consumptions', [new Controllers\UserCOnsumptionController, 'create']);
-    $route -> map('PATCH', '/my/consumptions/{id}', [new Controllers\UserCOnsumptionController, 'update']);
-    $route -> map('DELETE', '/my/consumptions/{id}', [new Controllers\UserCOnsumptionController, 'delete']);
+    $route -> map('GET', '/my/consumptions', [new Controllers\UserConsumptionController, 'index']);
+    $route -> map('GET', '/my/consumptions/{id}', [new Controllers\UserConsumptionController, 'show']);
+    $route -> map('POST', '/my/consumptions', [new Controllers\UserConsumptionController, 'create']);
+    $route -> map('PATCH', '/my/consumptions/{id}', [new Controllers\UserConsumptionController, 'update']);
+    $route -> map('DELETE', '/my/consumptions/{id}', [new Controllers\UserConsumptionController, 'delete']);
+
+    $route -> map('GET', '/users/{userId}/consumptions', [new Controllers\UserConsumptionController, 'index']);
+    $route -> map('GET', '/users/{userId}/consumptions/{id}', [new Controllers\UserConsumptionController, 'show']);
+    $route -> map('POST', '/users/{userId}/consumptions', [new Controllers\UserConsumptionController, 'create']);
+    $route -> map('PATCH', '/users/{userId}/consumptions/{id}', [new Controllers\UserConsumptionController, 'update']);
+    $route -> map('DELETE', '/users/{userId}/consumptions/{id}', [new Controllers\UserConsumptionController, 'delete']);
 
     // User consumptions related endpoints
 }) -> middleware($user);
