@@ -128,7 +128,7 @@ class Image
                 // resize the image
                 $state = self::resize($_filepath . $_filenameOrig, $_filepath . $_filenameNew, $maxSize);
                 if ($state) {
-//                    unlink($_filepath . $_filenameOrig);
+                    unlink($_filepath . $_filenameOrig);
                 }
             }
         } else {

@@ -47,6 +47,7 @@ class ValidatedRequest
     const TYPE_MIXED = 'mixed';
     const TYPE_JSON = 'json';
     const TYPE_HTML = 'html';
+    const TYPE_TIMESTAMP = 'timestamp';
     // variable input methods
     const METHOD_POST = 'POST';
     const METHOD_GET = 'GET';
@@ -108,6 +109,15 @@ class ValidatedRequest
                             $value = $_GET[$validationField['field']];
                         } else if ($validationField['type'] === self::TYPE_HTML) {
                             $value = $payload[$validationField['field']];
+                        } else if ($validationField['type'] === self::TYPE_TIMESTAMP) {
+                            try {
+                                $dt = new \DateTime($_GET[$validationField['field']]);
+                            } catch (\Exception $ex) {
+                                $instance -> isValid = false;
+                                $instance -> output = Output::InvalidParameter($response, $validationField['field']);
+                                return $instance;
+                            }
+                            $value = $payload[$validationField['field']];
                         } else if ($validationField['type'] === self::TYPE_EMAIL) {
                             $value = self::filterInput(INPUT_GET, $validationField['field'], self::getFilterSanitizationType($validationField['type']));
                             if ($_GET[$validationField['field']] != $value || !filter_var($_GET[$validationField['field']], FILTER_VALIDATE_EMAIL)) {
@@ -130,6 +140,15 @@ class ValidatedRequest
                         if ($validationField['type'] === self::TYPE_JSON) {
                             $value = $payload[$validationField['field']];
                         } else if ($validationField['type'] === self::TYPE_HTML) {
+                            $value = $payload[$validationField['field']];
+                        } else if ($validationField['type'] === self::TYPE_TIMESTAMP) {
+                            try {
+                                $dt = new \DateTime($payload[$validationField['field']]);
+                            } catch (\Exception $ex) {
+                                $instance -> isValid = false;
+                                $instance -> output = Output::InvalidParameter($response, $validationField['field']);
+                                return $instance;
+                            }
                             $value = $payload[$validationField['field']];
                         } else if ($validationField['type'] === self::TYPE_EMAIL) {
                             $value = self::filterVar($payload[$validationField['field']], self::getFilterSanitizationType($validationField['type']));
@@ -154,6 +173,15 @@ class ValidatedRequest
                         if ($validationField['type'] === self::TYPE_JSON) {
                             $value = $input[$validationField['field']];
                         } else if ($validationField['type'] === self::TYPE_HTML) {
+                            $value = $payload[$validationField['field']];
+                        } else if ($validationField['type'] === self::TYPE_TIMESTAMP) {
+                            try {
+                                $dt = new \DateTime($input[$validationField['field']]);
+                            } catch (\Exception $ex) {
+                                $instance -> isValid = false;
+                                $instance -> output = Output::InvalidParameter($response, $validationField['field']);
+                                return $instance;
+                            }
                             $value = $payload[$validationField['field']];
                         } else if ($validationField['type'] === self::TYPE_EMAIL) {
                             $value = self::filterVar($input[$validationField['field']], self::getFilterSanitizationType($validationField['type']));

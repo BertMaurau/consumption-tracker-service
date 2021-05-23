@@ -115,21 +115,6 @@ class UserController extends BaseController
             return Core\Output::NotAuthorized($response);
         }
 
-        // define required arguments/values
-        $validationFields = [
-            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'email', 'type' => Core\ValidatedRequest::TYPE_EMAIL, 'required' => true,],
-            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'password', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => true,],
-            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'device', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
-            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'browser', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
-        ];
-
-        $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
-        if (!$validatedRequest -> isValid()) {
-            return $validatedRequest -> getOutput();
-        }
-
-        $filteredInput = $validatedRequest -> getFilteredInput();
-
         // get user resource
         $user = (new Models\User) -> getById($userId);
         if (!$user) {
@@ -164,6 +149,22 @@ class UserController extends BaseController
             return Core\Output::NotAuthorized($response);
         }
 
+        // define required arguments/values
+        $validationFields = [
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
+        ];
+
+        $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
+        if (!$validatedRequest -> isValid()) {
+            return $validatedRequest -> getOutput();
+        }
+
+        $filteredInput = $validatedRequest -> getFilteredInput();
+
+        if (isset($filteredInput['id']) && $filteredInput['id'] != $userId) {
+            return Core\Output::NotAuthorized($response);
+        }
+
         // get user resource
         $user = (new Models\User) -> getById($userId);
         if (!$user) {
@@ -191,9 +192,10 @@ class UserController extends BaseController
 
         // define required arguments/values
         $validationFields = [
-            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'first_name', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
-            ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'last_name', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => true,],
         ];
+
+        $validationFields = array_merge($validationFields, Models\User::getConfig('updatable'));
 
         $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
         if (!$validatedRequest -> isValid()) {
@@ -202,14 +204,41 @@ class UserController extends BaseController
 
         $filteredInput = $validatedRequest -> getFilteredInput();
 
+        if ($filteredInput['id'] != $userId) {
+            return Core\Output::NotAuthorized($response);
+        }
+
         // Get the POST body and filter out the non-updatables
-        $postdata = array_intersect_key($filteredInput, array_flip(Models\User::getConfig('updatable')));
+        $postdata = array_intersect_key($filteredInput, Models\User::getConfig('updatable'));
 
         // get user resource
         $user = (new Models\User) -> getById($userId);
         if (!$user) {
             return Core\Output::ModelNotFound($response, 'User', $userId);
         }
+
+        if (isset($postdata['email']) && $postdata['email']) {
+            // check if available
+            $otherUser = (new Models\User) -> findBy(['email' => $postdata['email']], $take = 1);
+            if ($otherUser && $otherUser -> getId() != $user -> getId()) {
+                return Core\Output::Conflict($response, 'User already exists with email `' . $postdata['email'] . '`.');
+            }
+        }
+
+        if (isset($postdata['timezone']) && $postdata['timezone']) {
+            // check if available
+            $timezone = (new Models\Timezone) -> findBy(['timezone' => $postdata['timezone']], $take = 1);
+            if (!$timezone) {
+                return Core\Output::NotFound($response, 'No timezone found for value `' . $postdata['timezone'] . '`.');
+            }
+        }
+
+        if (isset($postdata['units']) && $postdata['units']) {
+            if (!in_array($postdata['units'], ['Metric', 'Imperial'])) {
+                return Core\Output::InvalidParameter($response, 'Invalid value for `units`.');
+            }
+        }
+
 
         // map the values to the model and upate
         $user -> map($postdata) -> update();
@@ -236,12 +265,19 @@ class UserController extends BaseController
 
         // define required arguments/values
         $validationFields = [
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => true,],
             ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'password', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => true,],
         ];
 
         $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
         if (!$validatedRequest -> isValid()) {
             return $validatedRequest -> getOutput();
+        }
+
+        $filteredInput = $validatedRequest -> getFilteredInput();
+
+        if ($filteredInput['id'] != $userId) {
+            return Core\Output::NotAuthorized($response);
         }
 
         $user = (new Models\User) -> getById($userId);
@@ -277,6 +313,7 @@ class UserController extends BaseController
 
         // define required arguments/values
         $validationFields = [
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => true,],
             ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'base64_string', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => true,],
         ];
 
@@ -286,6 +323,10 @@ class UserController extends BaseController
         }
 
         $filteredInput = $validatedRequest -> getFilteredInput();
+
+        if ($filteredInput['id'] != $userId) {
+            return Core\Output::NotAuthorized($response);
+        }
 
         // get user resource
         $user = (new Models\User) -> getById($userId);
@@ -299,8 +340,10 @@ class UserController extends BaseController
             return Core\Output::ServerError($response, "Something went wrong while processing the Avatar data.");
         }
 
+        $user -> addAvatarLink();
+
         // return updated resource
-        return Core\Output::NoContent($response);
+        return Core\Output::OK($response, ['avatar' => $user -> getAttribute('avatar')]);
     }
 
 }

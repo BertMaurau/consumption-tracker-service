@@ -63,7 +63,12 @@ class User extends Models\BaseModel
          * List of properties that are allowed to be updated
          */
         'updatable'         => [
-            'first_name', 'last_name'
+            'first_name'   => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'first_name', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            'last_name'    => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'last_name', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            'email'        => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'email', 'type' => Core\ValidatedRequest::TYPE_EMAIL, 'required' => false,],
+            'country_code' => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'country_code', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            'units'        => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'units', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            'timezone'     => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'timezone', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
         ],
         /**
          * List of properties that are allowed to be searchable
@@ -140,6 +145,10 @@ class User extends Models\BaseModel
     public function setGuid(string $guid)
     {
         $this -> guid = $guid;
+
+        // add the avatar
+        $this -> addAvatarLink();
+
         return $this;
     }
 
@@ -260,6 +269,93 @@ class User extends Models\BaseModel
     }
 
     /**
+     * Country Code
+     * @var string
+     */
+    public $country_code;
+
+    /**
+     * Set Country Code
+     *
+     * @return string|null
+     */
+    public function getCountryCode(): ?string
+    {
+        return $this -> country_code;
+    }
+
+    /**
+     * Get Country Code
+     *
+     * @param string $countryCode
+     *
+     * @return $this
+     */
+    public function setCountryCode(string $countryCode = null)
+    {
+        $this -> country_code = $countryCode;
+        return $this;
+    }
+
+    /**
+     * Timezone
+     * @var string
+     */
+    public $timezone;
+
+    /**
+     * Set Timezone
+     *
+     * @return string|null
+     */
+    public function getTimezone(): ?string
+    {
+        return $this -> timezone;
+    }
+
+    /**
+     * Get Timezone
+     *
+     * @param string $timezone
+     *
+     * @return $this
+     */
+    public function setTimezone(string $timezone = null)
+    {
+        $this -> timezone = $timezone;
+        return $this;
+    }
+
+    /**
+     * Units
+     * @var string
+     */
+    public $units;
+
+    /**
+     * Set Units
+     *
+     * @return string|null
+     */
+    public function getUnits(): ?string
+    {
+        return $this -> units;
+    }
+
+    /**
+     * Get Units
+     *
+     * @param string $units
+     *
+     * @return $this
+     */
+    public function setUnits(string $units = 'Metric')
+    {
+        $this -> units = $units;
+        return $this;
+    }
+
+    /**
      * Verified At
      * @var \DateTime
      */
@@ -315,6 +411,25 @@ class User extends Models\BaseModel
     }
 
     /**
+     * Add the public link to the avatar image
+     *
+     * @return User
+     */
+    public function addAvatarLink()
+    {
+
+        $localUrl = Core\Config::getInstance() -> Paths() -> images . self::getConfig('imageDirectory') . '/' . $this -> getGuid() . '.jpg';
+        $publicUrl = Core\Config::getInstance() -> Paths() -> imagesUrl . self::getConfig('imageDirectory') . '/' . $this -> getGuid() . '.jpg';
+
+        $modified = filemtime($localUrl);
+
+        // add the avatar link
+        $this -> addAttribute('avatar', $publicUrl . '?tsm=' . $modified);
+
+        return $this;
+    }
+
+    /**
      * Create a new User
      *
      * @param string $email
@@ -326,6 +441,21 @@ class User extends Models\BaseModel
     public static function create(string $email, string $password, array $properties = [])
     {
 
+        $timezone = 'UTC';
+
+        // fetch the location
+        $location = Core\Auth::getLocation();
+        // get country code
+        $countryCode = trim(explode(',', $location)[1]);
+        if ($countryCode !== 'Unknown') {
+            $timezoneModel = (new Models\Timezone) -> findBy(['country_code' => $countryCode], $take = 1);
+            if ($timezoneModel) {
+                $timezone = $timezoneModel -> getTimezone();
+            }
+        } else {
+            $countryCode = null;
+        }
+
         $email = strtolower(trim($email));
 
         // create the record
@@ -334,6 +464,8 @@ class User extends Models\BaseModel
                 -> setEmail($email)
                 -> setFirstName($properties['first_name'] ?? null)
                 -> setLastName($properties['last_name'] ?? null)
+                -> setTimezone($timezone)
+                -> setCountryCode($countryCode)
                 -> insert();
 
         // salt and hash the password
@@ -448,6 +580,8 @@ class User extends Models\BaseModel
         } catch (\Exception $ex) {
 
         }
+
+        $this -> addAvatarLink();
 
         return $this;
     }

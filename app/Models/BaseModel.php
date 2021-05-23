@@ -739,7 +739,7 @@ class BaseModel
                     // convert to string
                     $value = $value -> format('Y-m-d H:i:s');
                 }
-                $values[] = Core\Database::escape($value);
+                $values[] = trim(Core\Database::escape($value));
             }
         }
 
@@ -779,7 +779,7 @@ class BaseModel
         // properties will be filtered out, as well as the attributes property.
         foreach (get_object_vars($this) as $key => $value) {
             if (!in_array($key, ['attributes', 'relations', 'resources']) && (!empty($value) || is_numeric($value) || is_bool($value)) && isset($value) && is_callable(array($this, 'get' . str_replace('_', '', ucwords($key, '_'))))) {
-                $update[] = '`' . Core\Database::escape($key) . '`' . " = '" . Core\Database::escape($value) . "'";
+                $update[] = '`' . Core\Database::escape($key) . '`' . " = '" . trim(Core\Database::escape($value)) . "'";
             }
         }
 

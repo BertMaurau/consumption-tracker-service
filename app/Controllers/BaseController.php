@@ -36,6 +36,9 @@ class BaseController
     public function index(ServerRequestInterface $request, ResponseInterface $response, array $args)
     {
 
+        // Get the current ModelName to init a class.
+        $modelClass = static::MODEL_NAME;
+
         // define required arguments/values
         $validationFields = [
             ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'parentId', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
@@ -44,15 +47,14 @@ class BaseController
             ['method' => Core\ValidatedRequest::METHOD_GET, 'field' => 'skip', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
         ];
 
+        $validationFields = array_merge($validationFields, $modelClass::getConfig('filterable'));
+
         $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
         if (!$validatedRequest -> isValid()) {
             return $validatedRequest -> getOutput();
         }
 
         $filteredInput = $validatedRequest -> getFilteredInput();
-
-        // Get the current ModelName to init a class.
-        $modelClass = static::MODEL_NAME;
 
         if ($parentClass = $modelClass::getConfig('parent')) {
             // validate for parent id
@@ -68,7 +70,7 @@ class BaseController
 
         $filterable = $modelClass::getConfig('filterable') ?? null;
         if ($filterable) {
-            $filter = array_intersect_key($filteredInput, array_flip([]));
+            $filter = array_intersect_key($filteredInput, $modelClass::getConfig('filterable'));
         } else {
             $filter = [];
         }
@@ -199,45 +201,45 @@ class BaseController
         // Get the current ModelName to init a class.
         $modelClass = static::MODEL_NAME;
 
-        // Check for the given modelId. (validate this more if you'd like)
-        if (!isset($args['id'])) {
-            // Return the defined output for a missing ID attribute.
-            // Defined within the app/Output file.
-            return Core\Output::MissingModelId($response);
+        // define required arguments/values
+        $validationFields = [
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'parentId', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => true,],
+        ];
+
+        $validationFields = array_merge($validationFields, $modelClass::getConfig('updatable'));
+
+        $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
+        if (!$validatedRequest -> isValid()) {
+            return $validatedRequest -> getOutput();
         }
 
-        // check if integer
-        if (filter_var($args['id'], FILTER_VALIDATE_INT) === false) {
-            return Core\Output::InvalidParameter($response, 'Value `' . $args['id'] . ' is not a valid Resource-ID (number|integer).');
+        $filteredInput = $validatedRequest -> getFilteredInput();
+
+        if ($parentClass = $modelClass::getConfig('parent')) {
+            // validate for parent id
+            if (!isset($filteredInput['parentId'])) {
+                return Core\Output::MissingParameter($response, "Missing parentId for $parentClass.");
+            }
+
+            $parent = (new $parentClass()) -> getById($filteredInput['parentId']);
+            if (!$parent) {
+                return Core\Output::ModelNotFound($response, $parentClass, $filteredInput['parentId']);
+            }
         }
 
-        // set the ID
-        $modelId = $args['id'];
-
-        // Get the POST body and filter out the non-updatables
-        $postdata = (object) array_intersect_key(json_decode($request -> getBody(), true), $modelClass::UPDATABLE);
-
-        // Get the model by the ID first to get the current values.
-        // This is optional, but will allow to return the entire item with its
-        // values instead of empty/null/missing properties.
-        // This will also, ofcourse, check if the resource exists.
-        $model = (new $modelClass()) -> getById($modelId);
+        // Init the model and get the resource by the given ID.
+        $model = (new $modelClass()) -> getById($filteredInput['id']);
         if (!$model) {
             // Return the defined 404 output.
-            return Core\Output::ModelNotFound($response, $modelClass, $modelId);
+            return Core\Output::ModelNotFound($response, $modelClass, $filteredInput['id']);
         }
+
+        // Get the POST body and filter out the non-updatables
+        $postdata = array_intersect_key($validationFields, $modelClass::getConfig('updatable'));
 
         // Map the POST values to the model
-        $model -> map($postdata);
-
-        // apply validation rules to the mapped object before inserting
-        if (!$validator[0] = $model -> validate()) {
-            // If any validation rule failed. Return the defined output.
-            return Core\Output::ValidationFailed($response, $validator[1]);
-        }
-
-        // Update the record
-        $model -> update();
+        $model -> map($postdata) -> update();
 
         // Output the item with its updated values
         return Core\Output::OK($response, $model);
@@ -255,24 +257,38 @@ class BaseController
     public function delete(ServerRequestInterface $request, ResponseInterface $response, array $args)
     {
         // Get the current ModelName to init a class.
-
         $modelClass = static::MODEL_NAME;
 
-        // Check for the given modelId. (validate this more if you'd like)
-        if (!isset($args['id'])) {
-            // Return the defined output for a missing ID attribute.
-            // Defined within the app/Output file.
-            return Core\Output::MissingModelId($response);
+        // define required arguments/values
+        $validationFields = [
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'parentId', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
+            ['method' => Core\ValidatedRequest::METHOD_ARG, 'field' => 'id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => true,],
+        ];
+
+        $validatedRequest = Core\ValidatedRequest::validate($request, $response, $validationFields, $args);
+        if (!$validatedRequest -> isValid()) {
+            return $validatedRequest -> getOutput();
         }
 
-        // Set the ID
-        $modelId = $args['id'];
+        $filteredInput = $validatedRequest -> getFilteredInput();
 
-        // Get the model by the ID first to check if it exists.
-        $model = (new $modelClass()) -> getById($modelId);
+        if ($parentClass = $modelClass::getConfig('parent')) {
+            // validate for parent id
+            if (!isset($filteredInput['parentId'])) {
+                return Core\Output::MissingParameter($response, "Missing parentId for $parentClass.");
+            }
+
+            $parent = (new $parentClass()) -> getById($filteredInput['parentId']);
+            if (!$parent) {
+                return Core\Output::ModelNotFound($response, $parentClass, $filteredInput['parentId']);
+            }
+        }
+
+        // Init the model and get the resource by the given ID.
+        $model = (new $modelClass()) -> getById($filteredInput['id']);
         if (!$model) {
             // Return the defined 404 output.
-            return Core\Output::ModelNotFound($response, $modelClass, $modelId);
+            return Core\Output::ModelNotFound($response, $modelClass, $filteredInput['id']);
         }
 
         // Delete the record

@@ -24,17 +24,16 @@
  * THE SOFTWARE.
  */
 
-namespace ConsumptionTracker\Models\User;
+namespace ConsumptionTracker\Models;
 
-use ConsumptionTracker\Models AS Models;
 use ConsumptionTracker\Core AS Core;
 
 /**
- * Description of UserConsumption
+ * Description of Timezone
  *
  * @author bertmaurau
  */
-class UserConsumption extends Models\BaseModel
+class Timezone extends BaseModel
 {
 
     /**
@@ -46,7 +45,7 @@ class UserConsumption extends Models\BaseModel
         /**
          * Database table name
          */
-        'table'             => 'user_consumptions',
+        'table'             => 'timezones',
         /**
          * Field that represents the primary key
          */
@@ -62,21 +61,24 @@ class UserConsumption extends Models\BaseModel
         /**
          * List of properties that are allowed to be updated
          */
-        'updatable'         => [
-            'volume'      => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'volume', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
-            'consumed_at' => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'consumed_at', 'type' => Core\ValidatedRequest::TYPE_TIMESTAMP, 'required' => false,],
-        ],
+        'updatable'         => [],
         /**
          * List of properties that are allowed to be searchable
          */
         'searchable'        => [
-            'name'
+            'country_code', 'timezone'
+        ],
+        /**
+         * List of properties that are allowed to be filtered on
+         */
+        'filterable'        => [
+            'country_code' => ['method' => Core\ValidatedRequest::METHOD_GET, 'field' => 'country_code', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
         ],
         /**
          * List of properties that are allowed to be ordered on
          */
         'orderable'         => [
-            'id', 'item_id', 'volume', 'created_at', 'updated_at'
+            'id', 'country_code', 'timezone', 'created_at', 'updated_at'
         ],
         /**
          * If the model contains an image, return the paths to the base image
@@ -86,7 +88,7 @@ class UserConsumption extends Models\BaseModel
         /**
          * Directory for the images
          */
-        'imageDirectory'    => '',
+        'imageDirectory'    => 'timezones',
         /**
          * Linkable definition
          */
@@ -94,26 +96,19 @@ class UserConsumption extends Models\BaseModel
         /**
          * Expandable definition
          */
-        'expandable'        => ['item', 'user'],
+        'expandable'        => [],
         /**
          * Resource URI
          */
         'resourceUris'      => [
-            'self'      => [
-                'users'        => 'user_id',
-                'consumptions' => 'id',
+            'self' => [
+                'timezones' => 'id',
             ],
-            'parent'    => [
-                'users' => 'user_id',
-            ],
-            'reference' => [
-                ['items' => 'item_id',]
-            ]
         ],
         /**
          * Parent
          */
-        'parent'            => '\ConsumptionTracker\Models\User',
+        'parent'            => null,
     ];
 
     /**
@@ -123,150 +118,147 @@ class UserConsumption extends Models\BaseModel
      */
 
     /**
-     * User ID
-     * @var int
-     */
-    protected $user_id;
-
-    /**
-     * Get User ID
-     *
-     * @return int
-     */
-    public function getUserId(): int
-    {
-        return $this -> user_id;
-    }
-
-    /**
-     * Set User ID
-     *
-     * @param int $userId
-     *
-     * @return $this
-     */
-    public function setUserId(int $userId)
-    {
-        $this -> user_id = (int) $userId;
-        return $this;
-    }
-
-    /**
-     * Item ID
-     * @var int
-     */
-    public $item_id;
-
-    /**
-     * Get Item ID
-     *
-     * @return int
-     */
-    public function getItemId(): int
-    {
-        return $this -> item_id;
-    }
-
-    /**
-     * Set Item ID
-     *
-     * @param int $itemId
-     *
-     * @return $this
-     */
-    public function setItemId(int $itemId)
-    {
-        $this -> item_id = (int) $itemId;
-        return $this;
-    }
-
-    /**
-     * Volume
-     * @var int
-     */
-    public $volume;
-
-    /**
-     * Get Volume
-     *
-     * @return int
-     */
-    public function getVolume(): int
-    {
-        return $this -> volume;
-    }
-
-    /**
-     * Set Volume
-     *
-     * @param int $volume
-     *
-     * @return $this
-     */
-    public function setVolume(int $volume)
-    {
-        $this -> volume = (int) $volume;
-        return $this;
-    }
-
-    /**
-     * Notes
+     * Country Code
      * @var string
      */
-    public $notes;
+    public $country_code;
 
     /**
-     * Get Notes
+     * Get Country Code
      *
-     * @return string|null
+     * @return string
      */
-    public function getNotes(): ?string
+    public function getCountryCode(): string
     {
-        return $this -> notes;
+        return $this -> country_code;
     }
 
     /**
-     * Set Notes
+     * Set Country Code
      *
-     * @param string $notes
+     * @param string $countryCode
      *
      * @return $this
      */
-    public function setNotes(string $notes = null)
+    public function setCountryCode(string $countryCode)
     {
-        $this -> notes = $notes;
+        $this -> country_code = $countryCode;
         return $this;
     }
 
-    public $consumed_at;
+    /**
+     * Timezone
+     * @var string
+     */
+    public $timezone;
 
     /**
-     * Get Consumed At
+     * Get Timezone
      *
-     * @return \DateTime
+     * @return string
      */
-    public function getConsumedAt(): \DateTime
+    public function getTimezone(): string
     {
-        return $this -> consumed_at;
+        return $this -> timezone;
     }
 
     /**
-     * Set Consumed At
+     * Set Timezone
      *
-     * @param \DateTime $consumedAt
+     * @param string $timezone
      *
      * @return $this
-     *
-     * @throws \Exception
      */
-    public function setConsumedAt(\DateTime $consumedAt)
+    public function setTimezone(string $timezone)
     {
-        try {
-            $dt = new \DateTime($consumedAt);
-        } catch (\Exception $ex) {
-            throw new \Exception("Could not parse given timestamp (UserConsumption::consumedAt).");
-        }
-        $this -> consumed_at = $dt;
+        $this -> timezone = $timezone;
+        return $this;
+    }
+
+    /**
+     * GMT Offset
+     * @var float
+     */
+    public $gmt_offset;
+
+    /**
+     * Get GMT Offset
+     *
+     * @return float
+     */
+    public function getGmtOffset(): float
+    {
+        return $this -> gmt_offset;
+    }
+
+    /**
+     * Set GMT Offset
+     *
+     * @param float $gmtOffset
+     *
+     * @return $this
+     */
+    public function setGmtOffset(float $gmtOffset)
+    {
+        $this -> gmt_offset = (float) $gmtOffset;
+        return $this;
+    }
+
+    /**
+     * DST Offset
+     * @var float
+     */
+    public $dst_offset;
+
+    /**
+     * Get DST Offset
+     *
+     * @return float
+     */
+    public function getDstOffset(): float
+    {
+        return $this -> dst_offset;
+    }
+
+    /**
+     * Set DST Offset
+     *
+     * @param float $dstOffset
+     *
+     * @return $this
+     */
+    public function setDstOffset(float $dstOffset)
+    {
+        $this -> dst_offset = (float) $dstOffset;
+        return $this;
+    }
+
+    /**
+     * RAW Offset
+     * @var float
+     */
+    public $raw_offset;
+
+    /**
+     * Get RAW Offset
+     *
+     * @return float
+     */
+    public function getRawOffset(): float
+    {
+        return $this -> raw_offset;
+    }
+
+    /**
+     * Set RAW Offset
+     *
+     * @param float $rawOffset
+     *
+     * @return $this
+     */
+    public function setRawOffset(float $rawOffset)
+    {
+        $this -> raw_offset = (float) $rawOffset;
         return $this;
     }
 

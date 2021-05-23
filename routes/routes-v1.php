@@ -18,8 +18,8 @@ $route -> map('GET', '/', function(ServerRequestInterface $request, ResponseInte
 $route -> map('POST', '/register', [new Controllers\UserController, 'create']);
 $route -> map('POST', '/login', [new Controllers\UserController, 'login']);
 $route -> map('POST', '/password-resets/request', [new Controllers\UserPasswordResetController, 'request']);
-//$route -> map('POST', '/reset-password/validate', [new Controllers\UserPasswordResetController, 'validate']); // DEPRECATED
 $route -> map('POST', '/password-resets/reset', [new Controllers\UserPasswordResetController, 'reset']);
+//$route -> map('POST', '/reset-password/validate', [new Controllers\UserPasswordResetController, 'validate']); // DEPRECATED
 
 $route -> group('', function ($route) {
 
@@ -27,8 +27,10 @@ $route -> group('', function ($route) {
 
     // User related endpoints
     $route -> map('GET', '/me', [new Controllers\UserController, 'show']);
-    $route -> map('PATCH', '/me', [new Controllers\UserController, 'update']);
-    $route -> map('DELETE', '/me', [new Controllers\UserController, 'delete']);
+    $route -> map('GET', '/users/{id}', [new Controllers\UserController, 'show']);
+    $route -> map('PATCH', '/users/{id}', [new Controllers\UserController, 'update']);
+    $route -> map('DELETE', '/users/{id}', [new Controllers\UserController, 'delete']);
+    $route -> map('POST', '/users/{id}/avatar', [new Controllers\UserController, 'avatar']);
 
     $route -> map('GET', '/my/consumptions', [new Controllers\UserCOnsumptionController, 'index']);
     $route -> map('GET', '/my/consumptions/{id}', [new Controllers\UserCOnsumptionController, 'show']);
@@ -65,4 +67,18 @@ $route -> group('/volume-definitions', function ($route) {
 
     $route -> map('GET', '/', [new Controllers\VolumeDefinitionController, 'index']);
     $route -> map('GET', '/{id}', [new Controllers\VolumeDefinitionController, 'show']);
+});
+
+// Country related endpoints
+$route -> group('/countries', function ($route) {
+
+    $route -> map('GET', '/', [new Controllers\CountryController, 'index']);
+    $route -> map('GET', '/{id}', [new Controllers\CountryController, 'show']);
+});
+
+// Timezone related endpoints
+$route -> group('/timezones', function ($route) {
+
+    $route -> map('GET', '/', [new Controllers\TimezoneController, 'index']);
+    $route -> map('GET', '/{id}', [new Controllers\TimezoneController, 'show']);
 });

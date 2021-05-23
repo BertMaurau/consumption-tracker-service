@@ -24,17 +24,16 @@
  * THE SOFTWARE.
  */
 
-namespace ConsumptionTracker\Models\User;
+namespace ConsumptionTracker\Models;
 
-use ConsumptionTracker\Models AS Models;
 use ConsumptionTracker\Core AS Core;
 
 /**
- * Description of UserConsumption
+ * Description of Country
  *
  * @author bertmaurau
  */
-class UserConsumption extends Models\BaseModel
+class Country extends BaseModel
 {
 
     /**
@@ -46,7 +45,7 @@ class UserConsumption extends Models\BaseModel
         /**
          * Database table name
          */
-        'table'             => 'user_consumptions',
+        'table'             => 'countries',
         /**
          * Field that represents the primary key
          */
@@ -62,10 +61,7 @@ class UserConsumption extends Models\BaseModel
         /**
          * List of properties that are allowed to be updated
          */
-        'updatable'         => [
-            'volume'      => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'volume', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
-            'consumed_at' => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'consumed_at', 'type' => Core\ValidatedRequest::TYPE_TIMESTAMP, 'required' => false,],
-        ],
+        'updatable'         => [],
         /**
          * List of properties that are allowed to be searchable
          */
@@ -73,10 +69,17 @@ class UserConsumption extends Models\BaseModel
             'name'
         ],
         /**
+         * List of properties that are allowed to be filtered on
+         */
+        'filterable'        => [
+            'iso'  => ['method' => Core\ValidatedRequest::METHOD_GET, 'field' => 'iso', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+            'name' => ['method' => Core\ValidatedRequest::METHOD_GET, 'field' => 'name', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
+        ],
+        /**
          * List of properties that are allowed to be ordered on
          */
         'orderable'         => [
-            'id', 'item_id', 'volume', 'created_at', 'updated_at'
+            'id', 'iso', 'name', 'created_at', 'updated_at'
         ],
         /**
          * If the model contains an image, return the paths to the base image
@@ -86,7 +89,7 @@ class UserConsumption extends Models\BaseModel
         /**
          * Directory for the images
          */
-        'imageDirectory'    => '',
+        'imageDirectory'    => 'countries',
         /**
          * Linkable definition
          */
@@ -94,26 +97,19 @@ class UserConsumption extends Models\BaseModel
         /**
          * Expandable definition
          */
-        'expandable'        => ['item', 'user'],
+        'expandable'        => [],
         /**
          * Resource URI
          */
         'resourceUris'      => [
-            'self'      => [
-                'users'        => 'user_id',
-                'consumptions' => 'id',
+            'self' => [
+                'countries' => 'id',
             ],
-            'parent'    => [
-                'users' => 'user_id',
-            ],
-            'reference' => [
-                ['items' => 'item_id',]
-            ]
         ],
         /**
          * Parent
          */
-        'parent'            => '\ConsumptionTracker\Models\User',
+        'parent'            => null,
     ];
 
     /**
@@ -123,150 +119,118 @@ class UserConsumption extends Models\BaseModel
      */
 
     /**
-     * User ID
-     * @var int
-     */
-    protected $user_id;
-
-    /**
-     * Get User ID
-     *
-     * @return int
-     */
-    public function getUserId(): int
-    {
-        return $this -> user_id;
-    }
-
-    /**
-     * Set User ID
-     *
-     * @param int $userId
-     *
-     * @return $this
-     */
-    public function setUserId(int $userId)
-    {
-        $this -> user_id = (int) $userId;
-        return $this;
-    }
-
-    /**
-     * Item ID
-     * @var int
-     */
-    public $item_id;
-
-    /**
-     * Get Item ID
-     *
-     * @return int
-     */
-    public function getItemId(): int
-    {
-        return $this -> item_id;
-    }
-
-    /**
-     * Set Item ID
-     *
-     * @param int $itemId
-     *
-     * @return $this
-     */
-    public function setItemId(int $itemId)
-    {
-        $this -> item_id = (int) $itemId;
-        return $this;
-    }
-
-    /**
-     * Volume
-     * @var int
-     */
-    public $volume;
-
-    /**
-     * Get Volume
-     *
-     * @return int
-     */
-    public function getVolume(): int
-    {
-        return $this -> volume;
-    }
-
-    /**
-     * Set Volume
-     *
-     * @param int $volume
-     *
-     * @return $this
-     */
-    public function setVolume(int $volume)
-    {
-        $this -> volume = (int) $volume;
-        return $this;
-    }
-
-    /**
-     * Notes
+     * ISO
      * @var string
      */
-    public $notes;
+    public $iso;
 
     /**
-     * Get Notes
+     * Get ISO
+     *
+     * @return string
+     */
+    public function getIso(): string
+    {
+        return $this -> iso;
+    }
+
+    /**
+     * Set ISO
+     *
+     * @param string $iso
+     *
+     * @return $this
+     */
+    public function setIso(string $iso)
+    {
+        $this -> iso = $iso;
+        return $this;
+    }
+
+    /**
+     * ISO 3
+     * @var string
+     */
+    public $iso_3;
+
+    /**
+     * Get ISO 3
      *
      * @return string|null
      */
-    public function getNotes(): ?string
+    public function getIso3(): ?string
     {
-        return $this -> notes;
+        return $this -> iso_3;
     }
 
     /**
-     * Set Notes
+     * Set ISO 3
      *
-     * @param string $notes
      *
+     * @param string $iso3
      * @return $this
      */
-    public function setNotes(string $notes = null)
+    public function setIso3(string $iso3 = null)
     {
-        $this -> notes = $notes;
+        $this -> iso_3 = $iso3;
         return $this;
     }
 
-    public $consumed_at;
+    /**
+     * ISO Num
+     * @var int
+     */
+    public $iso_num;
 
     /**
-     * Get Consumed At
+     * Get ISO Num
      *
-     * @return \DateTime
+     * @return int
      */
-    public function getConsumedAt(): \DateTime
+    public function getIsoNum(): int
     {
-        return $this -> consumed_at;
+        return $this -> iso_num;
     }
 
     /**
-     * Set Consumed At
+     * Set ISO Num
      *
-     * @param \DateTime $consumedAt
+     * @param int $isoNum
      *
      * @return $this
-     *
-     * @throws \Exception
      */
-    public function setConsumedAt(\DateTime $consumedAt)
+    public function setIsoNum(int $isoNum)
     {
-        try {
-            $dt = new \DateTime($consumedAt);
-        } catch (\Exception $ex) {
-            throw new \Exception("Could not parse given timestamp (UserConsumption::consumedAt).");
-        }
-        $this -> consumed_at = $dt;
+        $this -> iso_num = $isoNum;
+        return $this;
+    }
+
+    /**
+     * Name
+     * @var string
+     */
+    public $name;
+
+    /**
+     * Get Name
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this -> name;
+    }
+
+    /**
+     * Set Name
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function setName(string $name)
+    {
+        $this -> name = $name;
         return $this;
     }
 
