@@ -150,18 +150,18 @@ class Auth
     {
         $ipaddress = '';
 
-        if (filter_input(INPUT_SERVER, 'HTTP_CLIENT_IP')) {
-            $ipaddress = filter_input(INPUT_SERVER, 'HTTP_CLIENT_IP');
-        } else if (filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR')) {
-            $ipaddress = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
-        } else if (filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED')) {
-            $ipaddress = filter_input(INPUT_SERVER, 'HTTP_X_FORWARDED');
-        } else if (filter_input(INPUT_SERVER, 'HTTP_FORWARDED_FOR')) {
-            $ipaddress = filter_input(INPUT_SERVER, 'HTTP_FORWARDED_FOR');
-        } else if (filter_input(INPUT_SERVER, 'HTTP_FORWARDED')) {
-            $ipaddress = filter_input(INPUT_SERVER, 'HTTP_FORWARDED');
-        } else if (filter_input(INPUT_SERVER, 'REMOTE_ADDR')) {
-            $ipaddress = filter_input(INPUT_SERVER, 'REMOTE_ADDR');
+        if (ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_CLIENT_IP')) {
+            $ipaddress = ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_CLIENT_IP');
+        } else if (ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR')) {
+            $ipaddress = ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_X_FORWARDED_FOR');
+        } else if (ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_X_FORWARDED')) {
+            $ipaddress = ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_X_FORWARDED');
+        } else if (ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_FORWARDED_FOR')) {
+            $ipaddress = ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_FORWARDED_FOR');
+        } else if (ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_FORWARDED')) {
+            $ipaddress = ValidatedRequest::filterInput(INPUT_SERVER, 'HTTP_FORWARDED');
+        } else if (ValidatedRequest::filterInput(INPUT_SERVER, 'REMOTE_ADDR')) {
+            $ipaddress = ValidatedRequest::filterInput(INPUT_SERVER, 'REMOTE_ADDR');
         } else {
             $ipaddress = 'UNKNOWN';
         }
