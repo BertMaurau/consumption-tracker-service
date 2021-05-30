@@ -1,6 +1,6 @@
 <?php
 
-namespace Cinephile;
+namespace ConsumptionTracker;
 
 use ConsumptionTracker\Core AS Core;
 use ConsumptionTracker\Models AS Models;
@@ -32,18 +32,18 @@ header('Access-Control-Allow-Headers: '
         . 'ResponseType');
 header('Access-Control-Max-Age: 1728000');
 
+// load all requirements, database connection, ..
+require_once __DIR__ . '/require.php';
+
 // If the client side requested a pre-flight OPTIONS request due to custom headers
 // of some sort.
-if (filter_input(INPUT_SERVER, 'REQUEST_METHOD') === 'OPTIONS') {
+if (Core\ValidatedRequest::filterInput(INPUT_SERVER, 'REQUEST_METHOD') === 'OPTIONS') {
     header('Content-Length: 0');
     header('Content-Type: text/plain');
 
     // end the script here
-    die();
+    die('OK');
 }
-
-// load all requirements, database connection, ..
-require_once __DIR__ . '/require.php';
 
 // log requests
 try {
@@ -63,7 +63,7 @@ $container -> share('request', function () {
     // change Constants API ROOT if the "api" is not running on the root of the
     // domain. For ex. if this is hosted within a subdirectory API then set this
     // to "/api" so that it matches the actual url: http://domain.com/api for ex.
-    $_SERVER['REQUEST_URI'] = str_replace(Core\Config::getInstance() -> API() -> root, '', filter_input(INPUT_SERVER, 'REQUEST_URI'));
+    $_SERVER['REQUEST_URI'] = str_replace(Core\Config::getInstance() -> API() -> root, '', Core\ValidatedRequest::filterInput(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_STRING));
 
     return \Zend\Diactoros\ServerRequestFactory::fromGlobals($_SERVER, $_GET, $_POST, $_COOKIE, $_FILES);
 });

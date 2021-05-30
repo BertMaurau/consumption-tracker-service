@@ -239,8 +239,8 @@ class LogRequestIncoming extends BaseModel
     {
 
         // get the info about the request
-        $verb = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
-        $uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
+        $verb = Core\ValidatedRequest::filterInput(INPUT_SERVER, 'REQUEST_METHOD', FILTER_SANITIZE_STRING);
+        $uri = Core\ValidatedRequest::filterInput(INPUT_SERVER, 'REQUEST_URI', FILTER_SANITIZE_STRING);
         if ($verb == 'POST' && (strpos($uri, '/upload') > -1 || strpos($uri, '/logo') > -1 || strpos($uri, '/avatar') > -1 )) {
             // do not try to process input
             $payload = '--CLEANED--';

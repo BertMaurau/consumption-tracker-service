@@ -35,8 +35,7 @@ use ConsumptionTracker\Core AS Core;
 //  - http://php.net/manual/en/timezones.php
 // -----------------------------------------------------------------------------
 date_default_timezone_set('UTC');
-set_time_limit(1800);
-
+//set_time_limit(1800);
 // -----------------------------------------------------------------------------
 //  Include the Composer autoloader for external dependencies
 // -----------------------------------------------------------------------------
