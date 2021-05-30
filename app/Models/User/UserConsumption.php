@@ -285,6 +285,15 @@ class UserConsumption extends Models\BaseModel
      * | Model Functions
      * |======================================================================
      */
+
+    /**
+     * Register a new Consumption
+     *
+     * @param int $userId
+     * @param array $properties
+     *
+     * @return type
+     */
     public static function create(int $userId, array $properties = [])
     {
 
@@ -300,6 +309,18 @@ class UserConsumption extends Models\BaseModel
         return $userConsumption;
     }
 
+    /**
+     * Get the data for a Chart representation
+     *
+     * @param int $userId
+     * @param array $config
+     * @param array $filter
+     * @param string $timezone
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
     public function getChartData(int $userId, array $config = [], array $filter = [], string $timezone = 'UTC')
     {
 
@@ -462,7 +483,7 @@ class UserConsumption extends Models\BaseModel
             $volume = (int) $row['volume'];
             $reference = $row['reference'];
 
-            // create dataset per lead
+            // create dataset per item
             if (!isset($datasets[$itemId])) {
                 $datasets[$itemId] = [
                     'name'    => $itemDescription,
@@ -485,6 +506,86 @@ class UserConsumption extends Models\BaseModel
         $datasets = array_values($datasets);
 
         return $datasets;
+    }
+
+    public function getSummary(int $userId, string $timezone = 'UTC')
+    {
+
+        $rawOffset = '+00:00';
+        if ($timezone != 'UTC') {
+            $dt = new \DateTime("now", new \DateTimeZone($timezone));
+            $rawOffset = $dt -> format('P');
+        }
+
+        // get the data
+        $dataset = [];
+        $totalVolume = 0;
+
+        $query = "
+            SELECT
+                items_categories.description AS category_description,
+                items.description AS item_description,
+                items.id AS item_id,
+                items_categories.id AS category_id,
+                SUM(_dataset.volume) AS total_consumption,
+                AVG(_dataset.volume) AS avg_volume
+            FROM (
+                SELECT SUM(volume) AS volume, item_id
+                FROM user_consumptions WHERE user_id = " . Core\Database::escape($userId) . " AND deleted_at IS NULL
+                GROUP BY item_id, DATE(CONVERT_TZ(user_consumptions.consumed_at, '+00:00', '$rawOffset'))
+            ) AS _dataset
+            LEFT JOIN items ON items.id = _dataset.item_id
+            LEFT JOIN items_categories ON items_categories.id = items.item_category_id
+            GROUP BY _dataset.item_id;
+            ";
+
+        $result = Core\Database::query($query);
+
+        while ($row = $result -> fetch_assoc()) {
+
+            $itemDescription = $row['item_description'];
+            $itemId = (int) $row['item_id'];
+            $categoryDescription = $row['category_description'];
+            $categoryId = (int) $row['category_id'];
+
+            $volumeTotal = (double) $row['total_consumption'];
+            $volumeAvg = (double) $row['avg_volume'];
+
+            // create dataset per category
+            if (!isset($dataset[$categoryDescription])) {
+                $dataset[$categoryDescription] = [
+                    'id'           => $categoryId,
+                    'description'  => $categoryDescription,
+                    'total_volume' => 0,
+                    'items'        => [],
+                ];
+            }
+
+            // set the current reference
+            $dataset[$categoryDescription]['items'][] = [
+                'id'           => $itemId,
+                'description'  => $itemDescription,
+                'total_volume' => $volumeTotal,
+                'avg_volume'   => round($volumeAvg),
+            ];
+
+            $dataset[$categoryDescription]['total_volume'] += $volumeTotal;
+
+            $totalVolume += $volumeTotal;
+        }
+
+        // strip keys from lead-dataset array
+        $dataset = array_values($dataset);
+
+        // sort categories by volume
+        usort($dataset, function($a, $b) {
+            return $b['total_volume'] - $a['total_volume'];
+        });
+
+        return [
+            'total'      => $totalVolume,
+            'categories' => $dataset,
+        ];
     }
 
 }

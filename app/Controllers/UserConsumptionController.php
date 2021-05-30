@@ -119,14 +119,16 @@ class UserConsumptionController extends BaseController
         } else {
             $filter = [];
         }
+        $filter['user_id'] = $userId;
 
-        $displayAs = isset($filteredInput['display']) && $filteredInput['display'] && in_array($filteredInput['display'], ['chart', 'default']) ? $filteredInput['display'] : 'default';
+        $user = (new Models\User) -> getById($userId);
+        $timezone = $user ? $user -> getTimezone() : 'UTC';
+
+        $displayAs = isset($filteredInput['display']) && $filteredInput['display'] && in_array($filteredInput['display'], ['chart', 'default', 'summary']) ? $filteredInput['display'] : 'default';
         if ($displayAs == 'chart') {
-
-            $user = (new Models\User) -> getById($userId);
-            $timezone = $user ? $user -> getTimezone() : 'UTC';
-
             $userConsumptions = (new Models\User\UserConsumption()) -> getChartData($userId, $filteredInput, $filter, $timezone);
+        } else if ($displayAs == 'summary') {
+            $userConsumptions = (new Models\User\UserConsumption()) -> getSummary($userId, $timezone);
         } else {
             $userConsumptions = (new Models\User\UserConsumption()) -> findBy($filter, $filteredInput['take'] ?? 50, $filteredInput['skip'] ?? 0, $filteredInput['orderBy'] ?? 'id');
         }
