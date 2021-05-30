@@ -422,7 +422,10 @@ class User extends Models\BaseModel
         $localUrl = Core\Config::getInstance() -> Paths() -> images . self::getConfig('imageDirectory') . '/' . $this -> getGuid() . '.jpg';
         $publicUrl = Core\Config::getInstance() -> Paths() -> imagesUrl . self::getConfig('imageDirectory') . '/' . $this -> getGuid() . '.jpg';
 
-        $modified = filemtime($localUrl);
+        $modified = 0;
+        if (file_exists($localUrl)) {
+            $modified = filemtime($localUrl);
+        }
 
         // add the avatar link
         $this -> addAttribute('avatar', $publicUrl . '?tsm=' . $modified);
