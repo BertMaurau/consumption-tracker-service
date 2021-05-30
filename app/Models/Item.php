@@ -71,6 +71,12 @@ class Item extends Models\BaseModel
             'description'
         ],
         /**
+         * List of properties that are allowed to be filtered on
+         */
+        'filterable'        => [
+            'item_category_id' => ['method' => Core\ValidatedRequest::METHOD_GET, 'field' => 'item_category_id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
+        ],
+        /**
          * List of properties that are allowed to be ordered on
          */
         'orderable'         => [
