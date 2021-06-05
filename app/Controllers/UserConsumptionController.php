@@ -68,6 +68,8 @@ class UserConsumptionController extends BaseController
             return Core\Output::ServerError($response, $ex -> getMessage());
         }
 
+        $userConsumption -> addRelation('item', $item);
+
 
         return Core\Output::OK($response, $userConsumption);
     }
