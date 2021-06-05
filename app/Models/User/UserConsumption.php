@@ -519,7 +519,6 @@ class UserConsumption extends Models\BaseModel
 
         // get the data
         $dataset = [];
-        $totalVolume = 0;
 
         $query = "
             SELECT
@@ -570,8 +569,6 @@ class UserConsumption extends Models\BaseModel
             ];
 
             $dataset[$categoryDescription]['total_volume'] += $volumeTotal;
-
-            $totalVolume += $volumeTotal;
         }
 
         // strip keys from lead-dataset array
@@ -582,8 +579,23 @@ class UserConsumption extends Models\BaseModel
             return $b['total_volume'] - $a['total_volume'];
         });
 
+        // get the totals
+        $query = "
+            SELECT
+                SUM(_dataset.volume) AS total_consumption,
+                AVG(_dataset.volume) AS avg_volume
+            FROM (
+                SELECT SUM(volume) AS volume, item_id
+                FROM user_consumptions WHERE user_id = " . Core\Database::escape($userId) . " AND deleted_at IS NULL
+                GROUP BY DATE(CONVERT_TZ(user_consumptions.consumed_at, '+00:00', '$rawOffset'))
+            ) AS _dataset;
+            ";
+        $result = Core\Database::query($query);
+        $resultTotals = $result -> fetch_assoc();
+
         return [
-            'total'      => $totalVolume,
+            'total'      => $resultTotals['total_consumption'],
+            'daily_avg'  => $resultTotals['avg_volume'],
             'categories' => $dataset,
         ];
     }
