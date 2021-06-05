@@ -594,8 +594,8 @@ class UserConsumption extends Models\BaseModel
         $resultTotals = $result -> fetch_assoc();
 
         return [
-            'total'      => $resultTotals['total_consumption'],
-            'daily_avg'  => $resultTotals['avg_volume'],
+            'total'      => (double) $resultTotals['total_consumption'],
+            'daily_avg'  => (double) $resultTotals['avg_volume'],
             'categories' => $dataset,
         ];
     }
