@@ -64,6 +64,8 @@ class UserConsumption extends Models\BaseModel
          */
         'updatable'         => [
             'volume'      => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'volume', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
+            'item_id'     => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'item_id', 'type' => Core\ValidatedRequest::TYPE_INTEGER, 'required' => false,],
+            'notes'       => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'notes', 'type' => Core\ValidatedRequest::TYPE_STRING, 'required' => false,],
             'consumed_at' => ['method' => Core\ValidatedRequest::METHOD_POST, 'field' => 'consumed_at', 'type' => Core\ValidatedRequest::TYPE_TIMESTAMP, 'required' => false,],
         ],
         /**
