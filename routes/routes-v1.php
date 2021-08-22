@@ -14,13 +14,17 @@ $route -> map('GET', '/', function(ServerRequestInterface $request, ResponseInte
     return Core\Output::OK($response, date('Y-m-d H:i:s'));
 });
 
+// CRON related endpoint
+$route -> map('GET', '/external/crons/scheduler', [new Controllers\CronController, 'scheduler']) -> middleware($external);
+
+
 // User related endpoints without middleware
 $route -> map('POST', '/register', [new Controllers\UserController, 'create']);
 $route -> map('POST', '/login', [new Controllers\UserController, 'login']);
 $route -> map('POST', '/password-resets/request', [new Controllers\UserPasswordResetController, 'request']);
 $route -> map('POST', '/password-resets/reset', [new Controllers\UserPasswordResetController, 'reset']);
 //$route -> map('POST', '/reset-password/validate', [new Controllers\UserPasswordResetController, 'validate']); // DEPRECATED
-
+// User related endpoints with middleware
 $route -> group('', function ($route) {
 
     $route -> map('POST', '/logout', [new Controllers\UserController, 'logout']);

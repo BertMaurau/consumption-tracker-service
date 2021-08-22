@@ -1,5 +1,5 @@
 {
-    "name": "bertmaurau-consumption-tracker-api",
+    "name": "bertmaurau/bertmaurau-consumption-tracker-api",
     "description": "The back-end API for the Consumption Tracker platform.",
     "type": "project",
     "require": {
@@ -7,7 +7,8 @@
         "zendframework/zend-diactoros": "dev-release-1.8",
         "lasserafn/php-initial-avatar-generator": "dev-master",
         "league/route": "3.x-dev",
-        "phpmailer/phpmailer": "dev-master"
+        "phpmailer/phpmailer": "dev-master",
+        "peppeocchi/php-cron-scheduler": "v3.x-dev"
     },
     "license": "MIT",
     "authors": [
