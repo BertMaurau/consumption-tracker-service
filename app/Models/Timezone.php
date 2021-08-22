@@ -256,9 +256,9 @@ class Timezone extends BaseModel
      *
      * @return $this
      */
-    public function setRawOffset(float $rawOffset)
+    public function setRawOffset(string $rawOffset)
     {
-        $this -> raw_offset = (float) $rawOffset;
+        $this -> raw_offset = (string) $rawOffset;
         return $this;
     }
 

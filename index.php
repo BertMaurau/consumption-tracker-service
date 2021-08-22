@@ -35,16 +35,6 @@ header('Access-Control-Max-Age: 1728000');
 // load all requirements, database connection, ..
 require_once __DIR__ . '/require.php';
 
-// If the client side requested a pre-flight OPTIONS request due to custom headers
-// of some sort.
-if (Core\ValidatedRequest::filterInput(INPUT_SERVER, 'REQUEST_METHOD') === 'OPTIONS') {
-    header('Content-Length: 0');
-    header('Content-Type: text/plain');
-
-    // end the script here
-    die('OK');
-}
-
 // log requests
 try {
     Models\LogRequestIncoming::create();

@@ -51,16 +51,27 @@ class Database
     static function init($connectWithDatabase = true)
     {
 
+        mysqli_report(MYSQLI_REPORT_STRICT);
+
         self::$name = Config::getInstance() -> Database() -> name;
         self::$host = Config::getInstance() -> Database() -> host;
         self::$user = Config::getInstance() -> Database() -> user;
         self::$pass = Config::getInstance() -> Database() -> pass;
 
         // connect with the database
-        if (!self::$mysqli = new \mysqli(self::$host, self::$user, self::$pass, ($connectWithDatabase) ? self::$name : null)) {
+        try {
+            self::$mysqli = @new \mysqli(self::$host, self::$user, self::$pass, ($connectWithDatabase) ? self::$name : null);
+        } catch (\Exception $ex) {
             throw new \Exception("Failed to connect with the Database.");
         }
 
+        if (!self::$mysqli) {
+            throw new \Exception("Failed to connect with the Database.");
+        }
+
+        if (self::$mysqli -> connect_error) {
+            throw new \Exception("Connect Error: " . self::$mysqli -> connect_error);
+        }
 
         // Set the charset to allow for example emoticons
         self::$mysqli -> set_charset(Config::getInstance() -> Database() -> charset);

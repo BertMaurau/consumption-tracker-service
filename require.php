@@ -60,6 +60,15 @@ if (Core\Config::getInstance() -> API() -> env == 'dev' || Core\Config::getInsta
     error_reporting(E_ALL);
 }
 
+// If the client side requested a pre-flight OPTIONS request due to custom headers
+// of some sort.
+if (Core\ValidatedRequest::filterInput(INPUT_SERVER, 'REQUEST_METHOD') === 'OPTIONS') {
+    header('Content-Length: 0');
+    header('Content-Type: text/plain');
+
+    // end the script here
+    die('OK');
+}
 
 // Connect with the DB
 // This could also be within some sort of App class.
@@ -68,7 +77,11 @@ if (Core\Config::getInstance() -> API() -> env == 'dev' || Core\Config::getInsta
 try {
     Core\Database::init();
 } catch (\Exception $ex) {
-    echo "Failed to connect with the database. Reason: " . $ex -> getMessage();
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'code'    => 500,
+        'message' => $ex -> getMessage()]);
     // No DB, no API.
     exit;
 }

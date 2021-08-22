@@ -54,11 +54,6 @@ $user = function ($request, $response, callable $next) {
                 if ($foundAuthToken -> isDisabled()) {
                     return Core\Output::NotAuthorized($response, "The provided authToken has been disabled.");
                 }
-
-                // check for destoryed
-                if ($foundAuthToken -> isDestroyed()) {
-                    return Core\Output::NotAuthorized($response, "The provided authToken has been destroyed.");
-                }
             }
 
             try {

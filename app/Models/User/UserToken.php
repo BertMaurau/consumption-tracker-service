@@ -68,7 +68,6 @@ class UserToken extends Models\BaseModel
          * List of properties that are allowed to be searchable
          */
         'searchable'        => [
-            'name'
         ],
         /**
          * List of properties that are allowed to be ordered on
@@ -292,35 +291,6 @@ class UserToken extends Models\BaseModel
     }
 
     /**
-     * Is Disabled
-     * @var bool
-     */
-    public $is_disabled;
-
-    /**
-     * Get Is Disabled
-     *
-     * @return bool
-     */
-    public function getIsDisabled(): bool
-    {
-        return $this -> is_disabled;
-    }
-
-    /**
-     * Set Is Disabled
-     *
-     * @param bool $isDisabled
-     *
-     * @return $this
-     */
-    public function setIsDisabled(bool $isDisabled)
-    {
-        $this -> is_disabled = $isDisabled;
-        return $this;
-    }
-
-    /**
      * Expires At
      * @var \DateTime
      */
@@ -372,7 +342,7 @@ class UserToken extends Models\BaseModel
      */
     public function isValid(): bool
     {
-        return ($this -> isActive() && !$this -> isDisabled() && !$this -> isExpired());
+        return ($this -> isActive() && !$this -> isExpired());
     }
 
     /**
