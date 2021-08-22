@@ -312,6 +312,98 @@ class UserConsumption extends Models\BaseModel
     }
 
     /**
+     * Get a basic summary (from last week) grouped by days and item
+     *
+     * @param int $userId
+     * @param string $timezone
+     *
+     * @return type
+     */
+    public function getSummaryFromLastWeek(int $userId, string $timezone = 'UTC')
+    {
+
+        $rawOffset = '+00:00';
+        if ($timezone != 'UTC') {
+            $dt = new \DateTime("now", new \DateTimeZone($timezone));
+            $rawOffset = $dt -> format('P');
+        }
+
+        $query = "
+            SELECT
+                user_consumptions.volume,
+                user_consumptions.consumed_at,
+                DAYNAME(CONVERT_TZ(user_consumptions.consumed_at, '+00:00', '$rawOffset')) AS consumed_on,
+                items.id AS item_id,
+                items.description AS item_description,
+                items_categories.id AS item_category_id,
+                items_categories.descritpion AS item_category_description
+            FROM user_consumptions
+            LEFT JOIN items ON items.id = user_consumptions.item_id
+            LEFT JOIN items_categories ON items_categories.id = items.item_category_id
+            WHERE user_consumptions.user_id = " . Core\Database::escape($userId) . "
+                    AND user_consumptions.deleted_at IS NULL
+                    AND YEARWEEK(CONVERT_TZ(user_consumptions.consumed_at, '+00:00', '$rawOffset')) = YEARWEEK(CONVERT_TZ(NOW(), '+00:00', '$rawOffset') - INTERVAL 1 WEEK)
+            ORDER BY user_consumptions.consumed_at ASC;
+            ";
+
+        $result = Core\Database::query($query);
+
+        $summary = [
+            'total' => 0,
+            'items' => [],
+            'days'  => [],
+        ];
+        while ($row = $result -> fetch_assoc()) {
+
+
+            $dayName = $row['consumed_on'];
+            $item = $row['item_description'];
+            $itemId = (int) $row['item_id'];
+            $volume = (int) $row['volume'];
+
+            // check for the day (detail)
+            if (!isset($summary['days'][$dayName])) {
+                $summary['days'][$dayName] = [
+                    'total' => 0,
+                    'items' => [],
+                ];
+            }
+
+            // check for the item (detail)
+            if (!isset($summary['items'][$item])) {
+                $summary['items'][$item] = [
+                    'item_description' => $item,
+                    'item_id'          => $itemId,
+                    'total'            => 0,
+                ];
+            }
+            if (!isset($summary['days'][$dayName]['items'][$item])) {
+                $summary['days'][$dayName]['items'][$item] = [
+                    'item_description' => $item,
+                    'item_id'          => $itemId,
+                    'total'            => 0,
+                ];
+            }
+
+
+            // do the increase stuff
+            $summary['total'] += $volume;
+            $summary['items'][$item]['total'] += $volume;
+            $summary['days'][$dayName]['items'][$item] += $volume;
+        }
+
+        // convert to array
+        foreach ($summary['days'] as $day => $details) {
+            $summary['days'][$day]['items'] = array_values($summary['days'][$day]['items']);
+        }
+
+        $summary['days'] = array_values($summary['days']);
+        $summary['items'] = array_values($summary['items']);
+
+        return $summary;
+    }
+
+    /**
      * Get the data for a Chart representation
      *
      * @param int $userId
@@ -510,6 +602,14 @@ class UserConsumption extends Models\BaseModel
         return $datasets;
     }
 
+    /**
+     * Get a basic summary (of all consumptions) grouped by category and item
+     * 
+     * @param int $userId
+     * @param string $timezone
+     *
+     * @return type
+     */
     public function getSummary(int $userId, string $timezone = 'UTC')
     {
 

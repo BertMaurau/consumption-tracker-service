@@ -590,4 +590,37 @@ class User extends Models\BaseModel
         return $this;
     }
 
+    /**
+     * Get list of users where local time matches and last consumption was within 3 weeks ago
+     *
+     * @param string $localTime
+     *
+     * @return array
+     */
+    public function getActiveWhereLocalTime(string $localTime)
+    {
+        $users = [];
+
+        $query = "
+            SELECT
+                users.*
+            FROM users
+            LEFT JOIN timezones ON timezones.timezone = users.timezone
+            LEFT JOIN (
+                SELECT
+                    user_id
+                FROM user_consumptions
+                WHERE DATE(CONVERT_TZ(user_consumptions.consumed_at, '+00:00', '$rawOffset')) > DATE(CONVERT_TZ(CURDATE(), '+00:00', '$rawOffset') - INTERVAL 3 WEEK)
+                GROUP BY user_consumptions.user_id
+            ) AS _last_consumption ON _last_consumption.user_id = users.id
+            WHERE DATE_FORMAT(CONVERT_TZ(NOW(), '+00:00', timezones.raw_offset), '%w%H') = '" . Core\Database::escape($localTime) . "';
+            ";
+        $result = Core\Database::query($query);
+        while ($row = $result -> fetch_assoc()) {
+            $users[] = (new User) -> map($row);
+        }
+
+        return $users;
+    }
+
 }
